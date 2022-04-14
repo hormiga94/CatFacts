@@ -5,12 +5,10 @@ namespace CF_Utility
 {
     public class CatFactManager : ICatFactManager
     {
-        private readonly HttpClient _client;
         private readonly ILogger<CatFactManager> _logger;
 
         public CatFactManager(ILoggerFactory loggerFactory)
         {
-            _client = new HttpClient();
             _logger = loggerFactory.CreateLogger<CatFactManager>();
            
         }
@@ -20,20 +18,22 @@ namespace CF_Utility
 
             CatFact fact = new CatFact(string.Empty, 0); 
 
-            try
+            using (HttpClient client = new HttpClient())
             {
-                var response = await _client.GetAsync("https://catfact.ninja/fact");
-                response.EnsureSuccessStatusCode();
-                fact = await response.Content.ReadAsAsync<CatFact>();
-            }
-            catch(Exception ex)
-            {
-                
-                _logger.LogError("GetCatFactAsync: " + ex.Message);
-               
-            }
+                try
+                {
+                    var response = await client.GetAsync("https://catfact.ninja/fact");
+                    response.EnsureSuccessStatusCode();
+                    fact = await response.Content.ReadAsAsync<CatFact>();
+                }
+                catch (Exception ex)
+                {
 
+                    _logger.LogError("GetCatFactAsync: " + ex.Message);
 
+                }
+
+            }
 
             return fact;
         }
